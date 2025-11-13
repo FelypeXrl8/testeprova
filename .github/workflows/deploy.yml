@@ -1,1 +1,36 @@
+name: Pipeline Completo - Prova DevOps
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # permite rodar manualmente (dispatch)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Criar arquivo ZIP do projeto
+        run: zip -r release.zip .
+
+      - name: Publicar o artefato ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package
+          path: release.zip
+
+  deploy:
+    needs: build # só roda se o build terminar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código novamente
+        uses: actions/checkout@v4
+
+      - name: Deploy para GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
 
